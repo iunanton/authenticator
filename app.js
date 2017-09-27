@@ -1,3 +1,4 @@
+"use strict";
 const uuidv4 = require('uuid/v4');
 // uuidv4();
 
@@ -18,12 +19,47 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.route('/')
 .get(function(req, res) {
+	// show authorization form
   res.sendFile(__dirname + '/index.html');
 })
 
 app.post('/', function(req, res) {
-    console.log("%s %s", Date.now(), JSON.stringify(req.body));
-    res.json({ "uuid": uuidv4() });
+	// receive credentials from user
+	console.log("%s Got query for new UUID", Date.now());
+	// connect to db
+	mongo.connect(url, function(err, db) {
+		if (err) {
+			console.error("%s %s: %s",Date.now(), err.name, err.message);
+			return;
+		}
+		db.collection("users").findOne({ "username": req.body.username }, { "password": 1 }, function (err, r) {
+			if (err) {
+				console.error("%s %s: %s",Date.now(), err.name, err.message);
+				return;
+			}
+			if (!r) {
+				console.log("%s Username or password incorrect", Date.now());
+				return;
+			}
+			bcrypt.compare(req.body.password, r.password, function(err, auth) {
+				if (err) {
+					console.error("%s %s: %s",Date.now(), err.name, err.message);
+					return;
+				}
+				if (!auth) {
+					console.log("%s Username or password incorrect", Date.now());
+					return;
+				}
+				// create user's uuid
+				var uuid = uuidv4();
+				console.log("%s Created UUID: %s", Date.now(), uuid);
+				// update token into db
+				//db.collection("users").findOne({ "username": req.body.username }, { "password": 1 }, function (err, r) {
+				//});
+				res.json({ "uuid": uuid });
+			});
+		})
+	});
 });
 
 // app.use(express.static(__dirname + '/public'));

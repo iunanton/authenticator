@@ -1,0 +1,21 @@
+{
+ "name": "Authenticator",
+ "version": "1.0.0",
+ "description": "Authenticator for Web and Android app",
+ "author": "Iun Anton <iunanton@naver.com>",
+ "main": "app.js",
+ "scripts": {
+    "start": "node app.js"
+  },
+ "repository": {
+  "type": "git",
+  "url": "git://github.com/iunanton/authenticator.git"
+  },
+ "dependencies": {
+  "express": "*",
+  "body-parser": "*",
+  "bcrypt": "*",
+  "mongodb": "*",
+  "uuid": "*"
+ }
+}

@@ -54,9 +54,13 @@ app.post('/', function(req, res) {
 				var uuid = uuidv4();
 				console.log("%s Created UUID: %s", Date.now(), uuid);
 				// update token into db
-				//db.collection("users").findOne({ "username": req.body.username }, { "password": 1 }, function (err, r) {
-				//});
-				res.json({ "uuid": uuid });
+				db.collection("users").updateOne({ "username": req.body.username }, { $set: { "userUuid" : uuid } }, function (err, r) {
+					if (err) {
+						console.error("%s %s: %s",Date.now(), err.name, err.message);
+						return;
+					}
+					res.json({ "uuid": uuid });
+				});
 			});
 		})
 	});

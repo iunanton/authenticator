@@ -4,7 +4,7 @@
 <title>Authentification</title>
 <meta name="generator" content="Bluefish 2.2.7" >
 <meta name="author" content="Anton Yun" >
-<meta name="date" content="2017-09-27T12:38:14+0800" >
+<meta name="date" content="2017-09-28T11:40:09+0800" >
 <meta name="copyright" content="">
 <meta name="keywords" content="">
 <meta name="description" content="">
@@ -16,9 +16,34 @@
 </head>
 <body>
 <form action="/" method="POST">
-<input type="text" name="username" /><br />
-<input type="password" name="password" /><br />
-<input type="submit" />
+<input type="text" name="username" id="username" /><br />
+<input type="password" name="password" id="password" /><br />
+<input type="submit" id="submit" />
 </form>
+<div id="demo"></div>
+<script type="text/javascript">
+(function () {
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			var json = JSON.parse(this.responseText);
+			console.log(json);
+			if (json.uuid) {
+				document.getElementById("demo").innerHTML = "Your token: <span style=\"color: lightcoral; \">" + json.uuid + "</span>";
+			} else {
+				document.getElementById("demo").innerHTML = "Error occuped: <span style=\"color: lightcoral; \">" + json.error + "</span>";
+			}
+		}
+	};
+	document.getElementById("submit").addEventListener("click", function (event) {
+		event.preventDefault();
+		var username = document.getElementById("username").value.trim();
+		var password = document.getElementById("password").value.trim();
+		xhttp.open("POST", "/", true);
+		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhttp.send("username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password));
+	})
+})()
+</script>
 </body>
 </html>

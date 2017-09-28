@@ -25,29 +25,34 @@ app.route('/')
 
 app.post('/', function(req, res) {
 	// receive credentials from user
-	console.log("%s Got query for new UUID", Date.now());
+	console.log("%s Got request for new UUID", Date.now());
 	// connect to db
 	mongo.connect(url, function(err, db) {
 		if (err) {
 			console.error("%s %s: %s",Date.now(), err.name, err.message);
+			res.json({ "error": err.message });
 			return;
 		}
 		db.collection("users").findOne({ "username": req.body.username }, { "password": 1 }, function (err, r) {
 			if (err) {
 				console.error("%s %s: %s",Date.now(), err.name, err.message);
+				res.json({ "error": err.message });
 				return;
 			}
 			if (!r) {
 				console.log("%s Username or password incorrect", Date.now());
+				res.json({ "error": "Username or password incorrect" });
 				return;
 			}
 			bcrypt.compare(req.body.password, r.password, function(err, auth) {
 				if (err) {
 					console.error("%s %s: %s",Date.now(), err.name, err.message);
+					res.json({ "error": err.message });
 					return;
 				}
 				if (!auth) {
 					console.log("%s Username or password incorrect", Date.now());
+					res.json({ "error": "Username or password incorrect" });
 					return;
 				}
 				// create user's uuid
@@ -57,8 +62,10 @@ app.post('/', function(req, res) {
 				db.collection("users").updateOne({ "username": req.body.username }, { $set: { "userUuid" : uuid } }, function (err, r) {
 					if (err) {
 						console.error("%s %s: %s",Date.now(), err.name, err.message);
+						res.json({ "error": err.message });
 						return;
 					}
+					// send token back
 					res.json({ "uuid": uuid });
 				});
 			});

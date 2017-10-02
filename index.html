@@ -4,7 +4,7 @@
 <title>Authentification</title>
 <meta name="generator" content="Bluefish 2.2.7" >
 <meta name="author" content="Anton Yun" >
-<meta name="date" content="2017-10-02T17:06:37+0800" >
+<meta name="date" content="2017-10-02T17:55:13+0800" >
 <meta name="copyright" content="">
 <meta name="keywords" content="">
 <meta name="description" content="">
@@ -16,7 +16,7 @@
 </head>
 <body>
 <form action="/" method="POST">
-<input type="hidden" name="grant_type" id="grant_type" />
+<input type="hidden" name="grant_type" id="grant_type" value="password"/>
 <input type="text" name="username" id="username" /><br />
 <input type="password" name="password" id="password" /><br />
 <input type="submit" id="submit" />
@@ -29,8 +29,8 @@
 		if (this.readyState == 4 && this.status == 200) {
 			var json = JSON.parse(this.responseText);
 			console.log(json);
-			if (json.uuid) {
-				document.getElementById("demo").innerHTML = "Your token: <span style=\"color: lightcoral; \">" + json.uuid + "</span>";
+			if (json.access_token) {
+				document.getElementById("demo").innerHTML = "Your token: <span style=\"color: lightcoral; \">" + json.access_token + "</span>";
 			}
 		}
 	};
@@ -39,7 +39,7 @@
 		var grant_type = document.getElementById("grant_type").value.trim();
 		var username = document.getElementById("username").value.trim();
 		var password = document.getElementById("password").value.trim();
-		xhttp.open("POST", "//owncloudhk.net/auth", true);
+		xhttp.open("POST", "//owncloudhk.net/oauth", true);
 		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 		xhttp.send("grant_type=" + encodeURIComponent(grant_type) + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password));
 	})

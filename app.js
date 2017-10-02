@@ -103,5 +103,5 @@ app.route('/')
 const server = http.createServer(app);
 
 server.listen(port, function listening() {
-  console.log('Listening on %d', server.address().port);
+  console.log('$s Listening on %d', Date.now(), server.address().port);
 });

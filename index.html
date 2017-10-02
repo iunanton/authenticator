@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Authentification</title>
+<title>Authentification　Server</title>
 <meta name="generator" content="Bluefish 2.2.7" >
 <meta name="author" content="Anton Yun" >
-<meta name="date" content="2017-10-02T17:55:13+0800" >
+<meta name="date" content="2017-10-02T20:21:13+0800" >
 <meta name="copyright" content="">
 <meta name="keywords" content="">
 <meta name="description" content="">
@@ -15,35 +15,16 @@
 <meta http-equiv="expires" content="0">
 </head>
 <body>
+<h1>Authentication Server <a target="_blank" href="https://tools.ietf.org/html/rfc6749">[RFC 6749]</a></h1>
 <form action="/" method="POST">
-<input type="hidden" name="grant_type" id="grant_type" value="password"/>
+<label for="grant_type">grant_type:</label><br />
+<input type="text" name="grant_type" id="grant_type" value="password" disabled /><br />
+<label for="username">username:</label><br />
 <input type="text" name="username" id="username" /><br />
+<label for="password">password:</label><br />
 <input type="password" name="password" id="password" /><br />
 <input type="submit" id="submit" />
 </form>
-<div id="demo"></div>
-<script type="text/javascript">
-(function () {
-	var xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			var json = JSON.parse(this.responseText);
-			console.log(json);
-			if (json.access_token) {
-				document.getElementById("demo").innerHTML = "Your token: <span style=\"color: lightcoral; \">" + json.access_token + "</span>";
-			}
-		}
-	};
-	document.getElementById("submit").addEventListener("click", function (event) {
-		event.preventDefault();
-		var grant_type = document.getElementById("grant_type").value.trim();
-		var username = document.getElementById("username").value.trim();
-		var password = document.getElementById("password").value.trim();
-		xhttp.open("POST", "//owncloudhk.net/oauth", true);
-		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xhttp.send("grant_type=" + encodeURIComponent(grant_type) + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password));
-	})
-})()
-</script>
+<div>Copyright &copy 2016<script>new Date().getFullYear()>2016&&document.write("-" + new Date().getFullYear());</script> <a target="_blank" href="http://edgeconsult.me" style="color: inherit">Edge Consulting</a></div>
 </body>
 </html>

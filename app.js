@@ -57,7 +57,7 @@ app.route('/')
 				res.status(400);
 				res.setHeader("Cache-Control", "no-store");
 				res.setHeader("Pragma", "no-cache");
-				res.json({ "error": "invalid_grant" });
+				res.json({ "error": "invalid_grant", "error_description": "Username or password incorrect" });
 				return;
 			}
 			bcrypt.compare(password, r.password, function(err, auth) {
@@ -74,7 +74,7 @@ app.route('/')
 					res.status(400);
 					res.setHeader("Cache-Control", "no-store");
 					res.setHeader("Pragma", "no-cache");
-					res.json({ "error": "invalid_grant" });
+					res.json({ "error": "invalid_grant", "error_description": "Username or password incorrect" });
 					return;
 				}
 				// create user's uuid

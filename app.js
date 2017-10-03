@@ -79,7 +79,7 @@ app.route('/')
 							}
 							res.setHeader("Cache-Control", "no-store");
 							res.setHeader("Pragma", "no-cache");
-							res.json({ "acces_token": token, "token_type": "bearer" });
+							res.json({ "access_token": token, "token_type": "bearer" });
 						});
 					});
 				})

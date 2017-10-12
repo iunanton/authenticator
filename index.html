@@ -4,7 +4,7 @@
 <title>Authentification　Server</title>
 <meta name="generator" content="Bluefish 2.2.7" >
 <meta name="author" content="Anton Yun" >
-<meta name="date" content="2017-10-03T20:25:21+0800" >
+<meta name="date" content="2017-10-12T21:37:48+0800" >
 <meta name="copyright" content="">
 <meta name="keywords" content="">
 <meta name="description" content="">
@@ -23,6 +23,15 @@
 <input type="text" name="username" id="username" /><br />
 <label for="password">password:</label><br />
 <input type="password" name="password" id="password" /><br />
+<input type="submit" id="submit" />
+</form>
+<form action="/oauth" method="POST">
+<label for="grant_type">grant_type:</label><br />
+<input type="text" name="grant_type" id="grant_type" value="guest" readonly="readonly" /><br />
+<label for="username">username:</label><br />
+<input type="text" name="username" id="username" /><br />
+<label for="code">code:</label><br />
+<input type="password" name="code" id="code" /><br />
 <input type="submit" id="submit" />
 </form>
 <div>Copyright &copy 2016<script>new Date().getFullYear()>2016&&document.write("-" + new Date().getFullYear());</script> <a target="_blank" href="http://edgeconsult.me" style="color: inherit">Edge Consulting</a></div>

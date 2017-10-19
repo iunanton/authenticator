@@ -21,120 +21,122 @@ app.route('/')
 	var grant_type = req.body.grant_type;
 	console.log("%s grant_type: %s", Date.now(), grant_type);
 	switch(grant_type) {
-		case "guest":
-			var username = req.body.username;
-			var code = req.body.code;
+		case "temporary":
+			var username = req.body.username.trim();
+			var code = req.body.code.trim();
+			if (username.length < 4) {
+				sendError(res, "invalid_grant", "This username is too short");
+				return;
+			}
 			mongo.connect(url, function(err, db) {
 				db.collection("codes").findOne({ "value": code }, function (err, docs) {
 					if (!docs) {
-						console.log("%s error: invalid_grant", Date.now());
-						res.status(400);
-						res.setHeader("Cache-Control", "no-store");
-						res.setHeader("Pragma", "no-cache");
-						res.json({ "error": "invalid_grant", "error_description": "Code incorrect" });
+						sendError(res, "invalid_grant", "This code is incorrect");
 						return;
 					}
-					db.collection("users").findOne({ "username": username }, { "isGuest": 1, "isOnline": 1}, function (err, docs) {
-						if (!docs) {
+					db.collection("users").findOne({ "username": username }, { "isGuest": 1, "isOnline": 1}, function (err, user) {
+						if (!user) {
 							var token = uuidv4();
 							var user = { "isGuest": true, "isDeleted": false, "isOnline": false, "username": username, "tokens": [ token ] };
 							db.collection("users").insertOne( user, function(err, r) {
-								res.setHeader("Cache-Control", "no-store");
-								res.setHeader("Pragma", "no-cache");
-								res.json({ "access_token": token, "token_type": "bearer" });
+								sendToken(res, token);
 							});
-						} else {
-							if (docs.isOnline) {
-								console.log("%s error: invalid_grant", Date.now());
-								res.status(400);
-								res.setHeader("Cache-Control", "no-store");
-								res.setHeader("Pragma", "no-cache");
-								res.json({ "error": "invalid_grant", "error_description": "Username is already in use" });
-								return;
-							}
+							return;
+						}
+						if (user.isGuest && !user.isOnline) {
 							var token = uuidv4();
 							db.collection("users").updateOne({ "username": username }, { $set: { "tokens" : [ token ] } }, function (err, r) {
-								res.setHeader("Cache-Control", "no-store");
-								res.setHeader("Pragma", "no-cache");
-								res.json({ "access_token": token, "token_type": "bearer" });
+								sendToken(res, token);
 							});
+							return;
 						}
+						sendError(res, "invalid_grant", "Username is already in use");
 					});
 				});
 			});
 			break;
 		case "password":
-			var username = req.body.username;
-			var password = req.body.password;
+			var username = req.body.username.trim();
+			var password = req.body.password.trim();
+			if (username.length < 4) {
+				sendError(res, "invalid_grant", "This username is too short");
+				return;
+			}
+			if (password.length < 4) {
+				sendError(res, "invalid_grant", "This password is too short");
+				return;
+			}
 			mongo.connect(url, function(err, db) {
-				if (err) {
-					console.error("%s %s: %s", Date.now(), err.name, err.message);
-					res.status(400);
-					res.setHeader("Cache-Control", "no-store");
-					res.setHeader("Pragma", "no-cache");
-					res.json({ "error": err.message });
-					return;
-				}
 				db.collection("users").findOne({ "username": username }, { "password": 1 }, function (err, user) {
-					if (err) {
-						console.error("%s %s: %s", Date.now(), err.name, err.message);
-						res.status(400);
-						res.setHeader("Cache-Control", "no-store");
-						res.setHeader("Pragma", "no-cache");
-						res.json({ "error": err.message });
-						return;
-					}
 					if (!user) {
-						console.log("%s error: invalid_grant", Date.now());
-						res.status(400);
-						res.setHeader("Cache-Control", "no-store");
-						res.setHeader("Pragma", "no-cache");
-						res.json({ "error": "invalid_grant", "error_description": "Username or password incorrect" });
+						sendError(res, "invalid_grant", "Username or password incorrect");
 						return;
 					}
 					bcrypt.compare(password, user.password, function(err, auth) {
-						if (err) {
-							console.error("%s %s: %s", Date.now(), err.name, err.message);
-							res.status(400);
-							res.setHeader("Cache-Control", "no-store");
-							res.setHeader("Pragma", "no-cache");
-							res.json({ "error": err.message });
-							return;
-						}
 						if (!auth) {
-							console.log("%s error: invalid_grant", Date.now());
-							res.status(400);
-							res.setHeader("Cache-Control", "no-store");
-							res.setHeader("Pragma", "no-cache");
-							res.json({ "error": "invalid_grant", "error_description": "Username or password incorrect" });
+							sendError(res, "invalid_grant", "Username or password incorrect");
 							return;
 						}
-						var token = uuidv4();
+							var token = uuidv4();
 						db.collection("users").updateOne({ "username": username }, { $push: { "tokens" : token } }, function (err, r) {
-							if (err) {
-								console.error("%s %s: %s", Date.now(), err.name, err.message);
-								res.status(400);
-								res.setHeader("Cache-Control", "no-store");
-								res.setHeader("Pragma", "no-cache");
-								res.json({ "error": err.message });
-								return;
-							}
-							res.setHeader("Cache-Control", "no-store");
-							res.setHeader("Pragma", "no-cache");
-							res.json({ "access_token": token, "token_type": "bearer" });
+							sendToken(res, token);
 						});
 					});
-				})
+				});
 			});
 			break;
-		default: console.log("%s error: unsupported_grant_type", Date.now());
-			res.status(400);
-			res.setHeader("Cache-Control", "no-store");
-			res.setHeader("Pragma", "no-cache");
-			res.json({ "error": "unsupported_grant_type" });
+		case "permanent":
+			var username = req.body.username.trim();
+			var code = req.body.code.trim();
+			var password = req.body.password.trim();
+			if (username.length < 4) {
+				sendError(res, "invalid_grant", "This username is too short");
+				return;
+			}
+			if (password.length < 4) {
+				sendError(res, "invalid_grant", "This password is too short");
+				return;
+			}
+			mongo.connect(url, function(err, db) {
+				db.collection("codes").findOne({ "value": code }, function (err, docs) {
+					if (!docs) {
+						sendError(res, "invalid_grant", "This code is incorrect");
+						return;
+					}
+					db.collection("users").findOne({ "username": username }, function (err, user) {
+						if (!user) {
+							bcrypt.hash(password, 12, function(err, hash) {
+								var token = uuidv4();
+								var user = { "isGuest": false, "isDeleted": false, "isOnline": false, "username": username, "tokens": [ token ], "password": hash };
+								db.collection("users").insertOne( user, function(err, r) {
+									sendToken(res, token);
+								});
+							});
+							return;
+						}
+						sendError(res, "invalid_grant", "Username is already in use");
+					});
+				});
+			});
+			break;
+		default: sendError(res, "unsupported_grant_type");
 			break;
 	}
 });
+
+function sendToken(response, token) {
+	response.setHeader("Cache-Control", "no-store");
+	response.setHeader("Pragma", "no-cache");
+	response.json({ "access_token": token, "token_type": "bearer" });
+}
+
+function sendError(response, error, description) {
+	console.log("%s error: %s", Date.now(), error);
+	response.status(400);
+	response.setHeader("Cache-Control", "no-store");
+	response.setHeader("Pragma", "no-cache");
+	response.json({ "error": error, "error_description" : description });
+}
 
 const server = http.createServer(app);
 
